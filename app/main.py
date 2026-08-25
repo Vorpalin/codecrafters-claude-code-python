@@ -125,7 +125,8 @@ def main():
                 elif tool_name == "Bash":
                     tool_args = json.loads(tool.function.arguments)
 
-                    p = subprocess.run(tool_args["command"], capture_output=True)
+                    commad = tool_args["command"].split(" ")
+                    p = subprocess.run(command, capture_output=True)
 
                     if p.returncode == 0:
                         result = p.stdout.decode()
