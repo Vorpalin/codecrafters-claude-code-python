@@ -38,12 +38,12 @@ def main():
 
     prompt=[{"role": "user", "content": args.p}]
 
-    messages = [prompt]
+    messages = prompt
 
     while True:
         chat = client.chat.completions.create(
             model="anthropic/claude-haiku-4.5",
-            messages=prompt,
+            messages=messages,
             tools=TOOLS
         )
 
