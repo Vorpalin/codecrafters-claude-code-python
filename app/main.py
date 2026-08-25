@@ -56,7 +56,7 @@ def main():
 
         tool_calls = chat.choices[0].message.tool_calls
 
-        if tool_calls == None or len(toll_calls) == 0:
+        if tool_calls == None or len(tool_calls) == 0:
             print(chat.choices[0].message.content)
             break
 
