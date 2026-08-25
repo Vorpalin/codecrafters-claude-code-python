@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import json
 
 from openai import OpenAI
 
@@ -50,7 +51,7 @@ def main():
     #print(chat.choices[0].message.content)
     tool = chat.choices[0].message.tool_calls[0]
     tool_name = tool.function.name
-    tool_args = tool.function.arguments
+    tool_args = json.load(tool.function.arguments)
 
     with open(tool_args.file_path) as f:
         print(f.readlines())
