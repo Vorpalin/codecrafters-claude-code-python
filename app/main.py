@@ -8,20 +8,22 @@ from openai import OpenAI
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
 
-TOOLS = [{
-  "type": "function",
-  "function": {
-    "name": "Read",
-    "description": "Read and return the contents of a file",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "file_path": {
-          "type": "string",
-          "description": "The path to the file to read"
-        }
-      },
-      "required": ["file_path"]
+TOOLS = [
+  {
+    "type": "function",
+    "function": {
+        "name": "Read",
+        "description": "Read and return the contents of a file",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "The path to the file to read"
+                }
+            },
+            "required": ["file_path"]
+         }
     }
   },
   {
@@ -45,7 +47,7 @@ TOOLS = [{
         }
     }
  }
-}]
+]
 
 def main():
     p = argparse.ArgumentParser()
