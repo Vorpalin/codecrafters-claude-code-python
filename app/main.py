@@ -55,7 +55,8 @@ def main():
         tool_args = json.loads(tool.function.arguments)
 
         with open(tool_args["file_path"]) as f:
-            print(f.readlines())
+            lines = f.readlines()
+            print("\n".join(lines))
     else:
         print(chat.choices[0].message.content)
 
