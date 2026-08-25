@@ -48,7 +48,13 @@ def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
 
-    tool = chat.choices[0].message.tool_calls[0]
+    tool_calls = chat.choices[0].message.tool_calls
+
+    if tool_calls == None:
+        print(chat.choices[0].message.content)
+        return
+
+    tool = tool_calls[0]
     tool_name = tool.function.name
 
     if tool_name == "Read":
