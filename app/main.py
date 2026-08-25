@@ -36,9 +36,11 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
+    prompt=[{"role": "user", "content": args.p}]
+
     chat = client.chat.completions.create(
         model="anthropic/claude-haiku-4.5",
-        messages=[{"role": "user", "content": args.p}],
+        messages=prompt,
         tools=TOOLS
     )
 
@@ -48,23 +50,42 @@ def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
 
-    tool_calls = chat.choices[0].message.tool_calls
+    messages = [prompt]
 
-    if tool_calls == None:
-        print(chat.choices[0].message.content)
-        return
+    while True:
 
-    tool = tool_calls[0]
-    tool_name = tool.function.name
+        tool_calls = chat.choices[0].message.tool_calls
 
-    if tool_name == "Read":
-        tool_args = json.loads(tool.function.arguments)
+        if tool_calls == None pr len(toll_calls) == 0:
+            print(chat.choices[0].message.content)
+            break
 
-        with open(tool_args["file_path"]) as f:
-            lines = f.readlines()
-            print("\n".join(lines))
-    else:
-        print(chat.choices[0].message.content)
+        for tool in tool_calls:
+
+            if tool.function != None:
+
+                result = ""
+                message = {
+                    role: "tool",
+                    tool_call_id: tool.id,
+                    content: result
+                }
+                tool_name = tool.function.name
+
+                if tool_name == "Read":
+                    tool_args = json.loads(tool.function.arguments)
+
+                    with open(tool_args["file_path"]) as f:
+                        lines = f.readlines()
+                        result = "\n".join(lines)
+
+                message = {
+                    role: "tool",
+                    tool_call_id: tool.id,
+                    content: result
+                }
+
+                messages.append(message)
 
 
 if __name__ == "__main__":
