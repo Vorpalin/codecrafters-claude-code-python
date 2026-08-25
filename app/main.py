@@ -74,6 +74,13 @@ def main():
                         lines = f.readlines()
                         result = "\n".join(lines)
 
+                else if tool_name == "Write":
+                    tool_args = tool.function.parameters.properties
+
+                    with open(tool_args["file_path"], "w") as f:
+                        result = tool_args["content"]
+                        f.write(result)
+
                 message = {
                     "role": "tool",
                     "tool_call_id": tool.id,
