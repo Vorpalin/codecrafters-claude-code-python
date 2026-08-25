@@ -98,7 +98,7 @@ def main():
                         result = "\n".join(lines)
 
                 elif tool_name == "Write":
-                    tool_args = tool.function.parameters.properties
+                    tool_args = json.loads(tool.function.arguments)
 
                     with open(tool_args["file_path"], "w") as f:
                         result = tool_args["content"]
