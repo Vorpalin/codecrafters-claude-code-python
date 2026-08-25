@@ -54,8 +54,7 @@ def main():
     if tool_name == "Read":
         tool_args = json.loads(tool.function.arguments)
 
-        print(tool_args)
-        with open(tool_args.file_path) as f:
+        with open(tool_args["file_path"]) as f:
             print(f.readlines())
     else:
         print(chat.choices[0].message.content)
