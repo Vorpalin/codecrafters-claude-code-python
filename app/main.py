@@ -65,11 +65,6 @@ def main():
             if tool.function != None:
 
                 result = ""
-                message = {
-                    role: "tool",
-                    tool_call_id: tool.id,
-                    content: result
-                }
                 tool_name = tool.function.name
 
                 if tool_name == "Read":
@@ -80,9 +75,9 @@ def main():
                         result = "\n".join(lines)
 
                 message = {
-                    role: "tool",
-                    tool_call_id: tool.id,
-                    content: result
+                    "role": "tool",
+                    "tool_call_id": tool.id,
+                    "content": result
                 }
 
                 messages.append(message)
