@@ -74,7 +74,7 @@ def main():
                         lines = f.readlines()
                         result = "\n".join(lines)
 
-                else if tool_name == "Write":
+                elif tool_name == "Write":
                     tool_args = tool.function.parameters.properties
 
                     with open(tool_args["file_path"], "w") as f:
