@@ -98,11 +98,11 @@ def get_content(content: str):
             res = "\n".join(lines[5:])
             for i in range(length - 1):
                 res.replace(f"${i}", cmd[i+1])
-                res.replace(f"ARGUMENTS[{i}]", cmd[i+1])
+                res.replace(f"$ARGUMENTS[{i}]", cmd[i+1])
 
         if length != 1:
             args = cmd[1:]
-            res.replace("ARGUMENTS", " ".join(args))
+            res.replace("$ARGUMENTS", " ".join(args))
         return res
 
 def main():
