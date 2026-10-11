@@ -67,6 +67,17 @@ TOOLS = [
  }
 ]
 
+def get_skills():
+    path = ".claude/skills/"
+    res = []
+    for (folder, folders_in, files_in) in os.walk(path):
+        for folder_in in folders_in:
+            with open(f"{folder}/{folder_in}") as file:
+                lines = file.readlines()
+                name = lines[1].replace("name: ", "").replace("\n")
+                description = lines[2].replace("description: ", "").replace("\n")
+                res.append("- " name + ": " + description)
+    return res
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("-p", required=True)
@@ -77,8 +88,9 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
+    skills = get_skills()
     prompt=[
-            { "role": "system", "content": "You have access to the following skills:\n\n- apple: Deploys the apple service to production." },
+            { "role": "system", "content": "You have access to the following skills:\n\n" + skills.join("\n")},
             {"role": "user", "content": args.p}
     ]
 
