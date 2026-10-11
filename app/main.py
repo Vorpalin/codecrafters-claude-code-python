@@ -78,6 +78,18 @@ def get_skills():
                 description = lines[2].replace("description: ", "").replace("\n", "")
                 res.append("- " + name + ": " + description)
     return res
+
+def get_content(content: str):
+    if content[0] != '/':
+        return content
+    else:
+        content = content[1:]
+        res = ""
+        with open(f".claude/skills/{content}/SKILL.md") as file:
+            lines = file.readlines()
+            res = "\n".join(lines[5:])
+        return res
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("-p", required=True)
@@ -91,7 +103,7 @@ def main():
     skills = get_skills()
     prompt=[
             { "role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills)},
-            {"role": "user", "content": args.p}
+            {"role": "user", "content": get_content(args.p)}
     ]
 
     messages = prompt
