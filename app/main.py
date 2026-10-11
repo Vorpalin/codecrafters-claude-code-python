@@ -75,7 +75,7 @@ def get_skills():
             with open(f"{folder}{folder_in}/SKILL.md") as file:
                 lines = file.readlines()
                 name = lines[1].replace("name: ", "").replace("\n")
-                description = lines[2].replace("description: ", "").replace("\n")
+                description = lines[2].replace("description: ", "").replace("\n", "")
                 res.append("- " + name + ": " + description)
     return res
 def main():
@@ -90,7 +90,7 @@ def main():
 
     skills = get_skills()
     prompt=[
-            { "role": "system", "content": "You have access to the following skills:\n\n" + skills.join("\n")},
+            { "role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills)},
             {"role": "user", "content": args.p}
     ]
 
