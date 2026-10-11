@@ -84,7 +84,7 @@ def get_content(content: str):
         return content
     else:
         content = content[1:]
-        cmd = content.split('')
+        cmd = content.split(' ')
         cmd = list(filter(lambda a: a != '', cmd))
         length = len(cmd)
 
