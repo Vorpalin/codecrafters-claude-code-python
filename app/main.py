@@ -97,12 +97,13 @@ def get_content(content: str):
             lines = file.readlines()
             res = "\n".join(lines[5:])
             for i in range(length - 1):
-                res.replace(f"${i}", cmd[i+1])
-                res.replace(f"$ARGUMENTS[{i}]", cmd[i+1])
+                res = res.replace(f"${i}", cmd[i+1])
+                res = res.replace(f"$ARGUMENTS[{i}]", cmd[i+1])
 
         if length != 1:
             args = cmd[1:]
-            res.replace("$ARGUMENTS", " ".join(args))
+            res = res.replace("$ARGUMENTS", " ".join(args))
+
         return res
 
 def main():
