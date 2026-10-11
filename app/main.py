@@ -72,7 +72,7 @@ def get_skills():
     res = []
     for (folder, folders_in, files_in) in os.walk(path):
         for folder_in in folders_in:
-            with open(f"{folder}/{folder_in}") as file:
+            with open(f"{folder}{folder_in}/SKILL.md") as file:
                 lines = file.readlines()
                 name = lines[1].replace("name: ", "").replace("\n")
                 description = lines[2].replace("description: ", "").replace("\n")
