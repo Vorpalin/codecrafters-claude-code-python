@@ -84,10 +84,20 @@ def get_content(content: str):
         return content
     else:
         content = content[1:]
+        cmd = content.split('')
+        cmd = list(filter(lambda a: a != '', cmd))
+        length = len(cmd)
+
         res = ""
-        with open(f".claude/skills/{content}/SKILL.md") as file:
+
+        if not length:
+            return res
+
+        with open(f".claude/skills/{cmd[0]}/SKILL.md") as file:
             lines = file.readlines()
             res = "\n".join(lines[5:])
+            for i in range(length - 1):
+                res.replace(f"${i}", cmd[i+1])
         return res
 
 def main():
