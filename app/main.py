@@ -76,7 +76,7 @@ def get_skills():
                 lines = file.readlines()
                 name = lines[1].replace("name: ", "").replace("\n")
                 description = lines[2].replace("description: ", "").replace("\n")
-                res.append("- " name + ": " + description)
+                res.append("- " + name + ": " + description)
     return res
 def main():
     p = argparse.ArgumentParser()
