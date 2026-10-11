@@ -77,7 +77,10 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    prompt=[{"role": "user", "content": args.p}]
+    prompt=[
+            { "role": "system", "content": "You have access to the following skills:\n\n- apple: Deploys the apple service to production." },
+            {"role": "user", "content": args.p}
+    ]
 
     messages = prompt
 
