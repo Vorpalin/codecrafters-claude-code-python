@@ -101,11 +101,13 @@ def get_content(content: str):
             value = cmd[i][1:]
             with open(f".claude/skills/{value}/SKILL.md") as file:
                 lines = file.readlines()
-                res = "\n".join(lines[5:])
+                cur = "\n".join(lines[5:])
                 for j in range(length - nb_cmd):
-                    res = res.replace(f"${i}", cmd[j+nb_cmd])
-                    res = res.replace(f"$ARGUMENTS[{i}]", cmd[j+nb_cmd])
-
+                    cur = res.replace(f"${i}", cmd[j+nb_cmd])
+                    cur = res.replace(f"$ARGUMENTS[{i}]", cmd[j+nb_cmd])
+                if res:
+                    res += "\n"
+                res += cur
         if length != nb_cmd:
             args = cmd[nb_cmd:]
             res = res.replace("$ARGUMENTS", " ".join(args))
