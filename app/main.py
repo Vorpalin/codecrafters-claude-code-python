@@ -183,9 +183,9 @@ def main():
                     p = subprocess.run(tool_args["command"], shell=True, capture_output=True, text=True)
 
                     if p.returncode == 0:
-                        result = p.stdout.decode()
+                        result = p.stdout
                     else:
-                        result = p.stderr.decode()
+                        result = p.stderr
 
                 message = {
                     "role": "tool",
