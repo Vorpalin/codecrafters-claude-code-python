@@ -162,30 +162,32 @@ def main():
 
                 result = ""
                 tool_name = tool.function.name
+                try:
+                    if tool_name == "Read":
+                        tool_args = json.loads(tool.function.arguments)
 
-                if tool_name == "Read":
-                    tool_args = json.loads(tool.function.arguments)
+                        with open(tool_args["file_path"]) as f:
+                            lines = f.readlines()
+                            result = "\n".join(lines)
 
-                    with open(tool_args["file_path"]) as f:
-                        lines = f.readlines()
-                        result = "\n".join(lines)
+                    elif tool_name == "Write":
+                        tool_args = json.loads(tool.function.arguments)
 
-                elif tool_name == "Write":
-                    tool_args = json.loads(tool.function.arguments)
+                        with open(tool_args["file_path"], "w") as f:
+                            result = tool_args["content"]
+                            f.write(result)
 
-                    with open(tool_args["file_path"], "w") as f:
-                        result = tool_args["content"]
-                        f.write(result)
+                    elif tool_name == "Bash":
+                        tool_args = json.loads(tool.function.arguments)
 
-                elif tool_name == "Bash":
-                    tool_args = json.loads(tool.function.arguments)
+                        p = subprocess.run(tool_args["command"], shell=True, capture_output=True, text=True)
 
-                    p = subprocess.run(tool_args["command"], shell=True, capture_output=True, text=True)
-
-                    if p.returncode == 0:
-                        result = p.stdout
-                    else:
-                        result = p.stderr
+                        if p.returncode == 0:
+                            result = p.stdout
+                        else:
+                            result = p.stderr
+                except Exception as e:
+                    result = f"Error: {e}"
 
                 message = {
                     "role": "tool",
