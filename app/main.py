@@ -103,8 +103,8 @@ def get_content(content: str):
                 lines = file.readlines()
                 cur = "\n".join(lines[5:])
                 for j in range(length - nb_cmd):
-                    cur = res.replace(f"${i}", cmd[j+nb_cmd])
-                    cur = res.replace(f"$ARGUMENTS[{i}]", cmd[j+nb_cmd])
+                    cur = cur.replace(f"${i}", cmd[j+nb_cmd])
+                    cur = cur.replace(f"$ARGUMENTS[{i}]", cmd[j+nb_cmd])
                 if res:
                     res += "\n"
                 res += cur
