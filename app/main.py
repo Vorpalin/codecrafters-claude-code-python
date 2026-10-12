@@ -106,7 +106,7 @@ def get_content(content: str):
             with open(f"{path}/SKILL.md") as file:
                 lines = file.readlines()
                 cur = f"Skill: {value} (located at {path})\nPaths in the instructions below are relative to that folder.\n\n"
-                cur = "\n".join(lines[5:])
+                cur += "\n".join(lines[5:])
                 for j in range(length - nb_cmd):
                     cur = cur.replace(f"${j}", cmd[j+nb_cmd])
                     cur = cur.replace(f"$ARGUMENTS[{j}]", cmd[j+nb_cmd])
