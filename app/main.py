@@ -70,16 +70,15 @@ TOOLS = [
 def get_skills():
     path = ".claude/skills/"
     res = []
-    for (folder, folders_in, files_in) in os.walk(path):
-        for folder_in in folders_in:
-            skill_file = skill_file = os.path.join(path, folder_in, "SKILL.md")
-            if not os.path.isfile(skill_file):
-                continue
-            with open(skill_file) as file:
-                lines = file.readlines()
-                name = lines[1].replace("name: ", "").replace("\n", "")
-                description = lines[2].replace("description: ", "").replace("\n", "")
-                res.append("- " + name + ": " + description)
+    for folder_in in os.listdir(path):
+        skill_file = skill_file = os.path.join(path, folder_in, "SKILL.md")
+        if not os.path.isfile(skill_file):
+            continue
+        with open(skill_file) as file:
+            lines = file.readlines()
+            name = lines[1].replace("name: ", "").replace("\n", "")
+            description = lines[2].replace("description: ", "").replace("\n", "")
+            res.append("- " + name + ": " + description)
     return res
 
 def get_content(content: str):
