@@ -106,8 +106,8 @@ def get_content(content: str):
                     res = res.replace(f"${i}", cmd[j+nb_cmd])
                     res = res.replace(f"$ARGUMENTS[{i}]", cmd[j+nb_cmd])
 
-        if length != 1:
-            args = cmd[1:]
+        if length != nb_cmd:
+            args = cmd[nb_cmd:]
             res = res.replace("$ARGUMENTS", " ".join(args))
 
         return res
