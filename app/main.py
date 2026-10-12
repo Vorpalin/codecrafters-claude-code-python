@@ -83,7 +83,6 @@ def get_content(content: str):
     if content[0] != '/':
         return content
     else:
-        content = content[1:]
         cmd = content.split(' ')
         cmd = list(filter(lambda a: a != '', cmd))
         length = len(cmd)
@@ -93,12 +92,19 @@ def get_content(content: str):
         if not length:
             return res
 
-        with open(f".claude/skills/{cmd[0]}/SKILL.md") as file:
-            lines = file.readlines()
-            res = "\n".join(lines[5:])
-            for i in range(length - 1):
-                res = res.replace(f"${i}", cmd[i+1])
-                res = res.replace(f"$ARGUMENTS[{i}]", cmd[i+1])
+        nb_cmd = 1
+
+        while (nb_cmd < length and cmd[nb_cmd][0] == '/'):
+            nb_cmd += 1
+
+        for i in range(nb_cmd):
+            value = cmd[i][1:]
+            with open(f".claude/skills/{value}/SKILL.md") as file:
+                lines = file.readlines()
+                res = "\n".join(lines[5:])
+                for j in range(length - nb_cmd):
+                    res = res.replace(f"${i}", cmd[j+nb_cmd])
+                    res = res.replace(f"$ARGUMENTS[{i}]", cmd[j+nb_cmd])
 
         if length != 1:
             args = cmd[1:]
