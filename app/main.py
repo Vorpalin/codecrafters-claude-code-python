@@ -70,6 +70,10 @@ TOOLS = [
 def get_skills():
     path = ".claude/skills/"
     res = []
+
+    if not os.path.isdir(path):
+        return res
+
     for folder_in in os.listdir(path):
         skill_file = skill_file = os.path.join(path, folder_in, "SKILL.md")
         if not os.path.isfile(skill_file):
