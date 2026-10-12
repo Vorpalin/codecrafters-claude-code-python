@@ -99,8 +99,10 @@ def get_content(content: str):
 
         for i in range(nb_cmd):
             value = cmd[i][1:]
-            with open(f".claude/skills/{value}/SKILL.md") as file:
+            path = f".claude/skills/{value}"
+            with open(f"{path}/SKILL.md") as file:
                 lines = file.readlines()
+                cur = f"Skill: {value} (located at {path})\nPaths in the instructions below are relative to that folder.\n\n"
                 cur = "\n".join(lines[5:])
                 for j in range(length - nb_cmd):
                     cur = cur.replace(f"${j}", cmd[j+nb_cmd])
@@ -126,7 +128,7 @@ def main():
 
     skills = get_skills()
     prompt=[
-            { "role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills)},
+            {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills)},
             {"role": "user", "content": get_content(args.p)}
     ]
 
