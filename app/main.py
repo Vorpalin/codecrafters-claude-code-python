@@ -68,7 +68,7 @@ TOOLS = [
 ]
 
 def get_skills():
-    path = ".claude/skills/"
+    path = ".claude/skills"
     res = []
 
     if not os.path.isdir(path):
