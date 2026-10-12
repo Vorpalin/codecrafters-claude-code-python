@@ -64,7 +64,22 @@ TOOLS = [
             }
         }
     }
- }
+ },
+ {
+    "type": "function",
+    "function": {
+      "name": "Skill",
+      "description": "Load a skill's instructions into the conversation",
+      "parameters": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "description": "The name of the skill to use" },
+          "args": { "type": "string", "description": "Optional arguments for the skill" }
+        }
+      }
+    }
+  }
 ]
 
 def get_skills():
@@ -134,7 +149,7 @@ def main():
 
     skills = get_skills()
     prompt=[
-            {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills)},
+            {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills) + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns."},
             {"role": "user", "content": get_content(args.p)}
     ]
 
@@ -190,6 +205,12 @@ def main():
                             result = p.stdout
                         else:
                             result = p.stderr
+
+                    elif tool_name == "Skill":
+                        tool_args = json.loads(tool.function.arguments)
+
+                        skill_call = "/" + tool_args["name"] + " " + tool_args["args"]
+                        result = get_content(skill_call)
                 except Exception as e:
                     result = f"Error: {e}"
 
