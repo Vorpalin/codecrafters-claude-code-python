@@ -100,7 +100,22 @@ def get_skills():
             res.append("- " + name + ": " + description)
     return res
 
-def get_content(content: str):
+def parse_skill(path):
+    with open(f"{path}/SKILL.md") as f:
+        text = f.read()
+
+    params = {}
+    body = text
+    if text.startswith("---"):
+        _, front, body = text.split("---", 2)
+        for line in front.strip().splitlines():
+            if ":" in line:
+                field, content = line.split(":", 1)
+                params[field.strip()] = content.strip()
+
+    return params, body
+
+def get_content(content: str, client):
     if content[0] != '/':
         return content
     else:
@@ -121,40 +136,27 @@ def get_content(content: str):
         for i in range(nb_cmd):
             value = cmd[i][1:]
             path = f".claude/skills/{value}"
-            with open(f"{path}/SKILL.md") as file:
-                lines = file.readlines()
-                cur = f"Skill: {value} (located at {path})\nPaths in the instructions below are relative to that folder.\n\n"
-                cur += "\n".join(lines[5:])
-                for j in range(length - nb_cmd):
-                    cur = cur.replace(f"${j}", cmd[j+nb_cmd])
-                    cur = cur.replace(f"$ARGUMENTS[{j}]", cmd[j+nb_cmd])
-                if res:
-                    res += "\n"
-                res += cur
+            meta, body = parse_skill(path)
+            cur = f"Skill: {value} (located at {path})\nPaths in the instructions below are relative to that folder.\n\n"
+            cur += body
+            for j in range(length - nb_cmd):
+                cur = cur.replace(f"${j}", cmd[j+nb_cmd])
+                cur = cur.replace(f"$ARGUMENTS[{j}]", cmd[j+nb_cmd])
+            if meta.get("context") == "fork":
+                sub_messages = [{"role": "user", "content": cur}]
+                answer = run_agent(client, sub_messages)
+                cur = f"<skill name=\"{value}\">\nResult from subagent:\n{answer}\n</skill>"
+            if res:
+                res += "\n"
+            res += cur
+
         if length != nb_cmd:
             args = cmd[nb_cmd:]
             res = res.replace("$ARGUMENTS", " ".join(args))
 
         return res
 
-def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("-p", required=True)
-    args = p.parse_args()
-
-    if not API_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY is not set")
-
-    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-
-    skills = get_skills()
-    prompt=[
-            {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills) + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns."},
-            {"role": "user", "content": get_content(args.p)}
-    ]
-
-    messages = prompt
-
+def run_agent(client, messages):
     while True:
         chat = client.chat.completions.create(
             model="anthropic/claude-haiku-4.5",
@@ -165,8 +167,6 @@ def main():
         if not chat.choices or len(chat.choices) == 0:
             raise RuntimeError("no choices in response")
 
-        # You can use print statements as follows for debugging, they'll be visible when running tests.
-        #print("Logs from your program will appear here!", file=sys.stderr)
 
         messages.append(chat.choices[0].message)
         tool_calls = chat.choices[0].message.tool_calls
@@ -221,6 +221,26 @@ def main():
                 }
 
                 messages.append(message)
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("-p", required=True)
+    args = p.parse_args()
+
+    if not API_KEY:
+        raise RuntimeError("OPENROUTER_API_KEY is not set")
+
+    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+
+    skills = get_skills()
+    prompt=[
+            {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(skills) + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns."},
+            {"role": "user", "content": get_content(args.p, client)}
+    ]
+
+    messages = prompt
+
+    run_agent(client, messages)
 
 
 if __name__ == "__main__":
