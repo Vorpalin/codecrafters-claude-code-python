@@ -144,11 +144,8 @@ def get_content(content: str, client):
                 cur = cur.replace(f"$ARGUMENTS[{j}]", cmd[j+nb_cmd])
             if meta.get("context") == "fork":
                 sub_messages = [{"role": "user", "content": cur}]
-                answer = run_agent(client, sub_messages)
-                if nb_cmd == 1:
-                    return answer
-
-                cur = f"<skill name=\"{value}\">\nResult from subagent:\n{answer}\n</skill>"
+                run_agent(client, sub_messages)
+                cur = ""
             if res:
                 res += "\n"
             res += cur
@@ -213,7 +210,7 @@ def run_agent(client, messages):
                         tool_args = json.loads(tool.function.arguments)
 
                         skill_call = "/" + tool_args["name"] + " " + tool_args["args"]
-                        result = get_content(skill_call)
+                        result = get_content(skill_call, client)
                 except Exception as e:
                     result = f"Error: {e}"
 
