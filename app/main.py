@@ -145,6 +145,9 @@ def get_content(content: str, client):
             if meta.get("context") == "fork":
                 sub_messages = [{"role": "user", "content": cur}]
                 answer = run_agent(client, sub_messages)
+                if nb_cmd == 1:
+                    return answer
+
                 cur = f"<skill name=\"{value}\">\nResult from subagent:\n{answer}\n</skill>"
             if res:
                 res += "\n"
