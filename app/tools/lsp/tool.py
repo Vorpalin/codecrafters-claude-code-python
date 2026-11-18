@@ -148,6 +148,8 @@ class LspTool(BaseTool):
         self.document_versions[uri] = 1
         self._opened_documents.add(uri)
 
+        return uri
+
     def execute(self, arguments: dict[str, Any]) -> str:
         operation = arguments.get("operation")
 
