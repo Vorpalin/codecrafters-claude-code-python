@@ -7,9 +7,11 @@ from app.skills import SkillService
 from app.tools import BashTool, LspTool, ReadTool, SkillTool, ToolRegistry, WriteTool
 import os
 
-def build_agent(client: OpenAI) -> tuple[Agent, SkillService]:
+def build_agent(client: OpenAI,
+                lsp_client: LSPClient | None = None,
+) -> tuple[Agent, SkillService]:
     skills = SkillService()
-    registry = ToolRegistry([ReadTool(), LspTool(), WriteTool(), BashTool(), SkillTool(skills)])
+    registry = ToolRegistry([ReadTool(), LspTool(lsp_client), WriteTool(), BashTool(), SkillTool(skills)])
     
     agent = Agent(client, registry)
     skills.set_subagent_runner(agent.run)
@@ -25,20 +27,15 @@ def main() -> None:
     settings = Settings.from_environment()
     client = OpenAI(api_key=settings.api_key, base_url=settings.base_url)
 
-    lsp_client = None
-    lsp_configuration = None
+    lsp_client = LSPClient.from_environment()
 
-    if os.getenv("CODECRAFTERS_LSP_URL"):
-        lsp_client = LSPClient()
-        lsp_configuration = lsp_client.call("configuration", {})
-
-    agent, skills = build_agent(client)
+    agent, skills = build_agent(client, lsp_client)
     descriptions = skills.get_skills()
     messages = [
         {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(descriptions) + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns."},
         {"role": "user", "content": skills.get_content(args.p)},
     ]
-    
+
     print(agent.run(messages))
 
 
