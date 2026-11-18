@@ -16,6 +16,18 @@ class BashTool(BaseTool):
 
     def execute(self, arguments: dict[str, Any]) -> str:
         process = subprocess.run(
-            arguments["command"], shell=True, capture_output=True, text=True
+            arguments["command"],
+            shell=True,
+            capture_output=True,
+            text=True,
         )
-        return process.stdout if process.returncode == 0 else process.stderr
+
+        output = process.stdout
+
+        if process.stderr:
+            output += process.stderr
+
+        if process.returncode != 0:
+            output += f"\nCommand exited with code {process.returncode}"
+
+        return output
