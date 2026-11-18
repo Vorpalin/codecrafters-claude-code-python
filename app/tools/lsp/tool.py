@@ -30,4 +30,12 @@ class LspTool(BaseTool):
     }
 
     def execute(self, arguments: dict[str, Any]) -> str:
+        operation = arguments.get("operation", "")
+        filePath = arguments.get("filePath", "")
+        line = arguments.get("line", 1)
+        character = arguments.get("character")
+
+        if operation == "goToDefinition":
+            return f"Defined in {filePath}{line}:{character}"
+        
         return "LSP is not implemented yet"
