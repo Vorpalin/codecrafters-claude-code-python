@@ -50,6 +50,7 @@ class LspTool(BaseTool):
         self.document_versions = (
             document_versions if document_versions is not None else {}
         )
+        self._opened_documents: set[str] = set()
 
     def _go_to_definition(self, path: Path, line: int, character: int) -> str:
 
@@ -122,15 +123,13 @@ class LspTool(BaseTool):
 
         return "References found:\n" + "\n".join(references)
 
-    def _open_document(self, path) -> str:
+    def _open_document(self, path: Path) -> str:
+        uri = path.resolve().as_uri()
 
-        uri = path.as_uri()
-
-        if uri in self.document_versions:
+        if uri in self._opened_documents:
             return uri
 
         language_id = self.lsp_client.extension_to_language.get(path.suffix)
-
         if language_id is None:
             raise ValueError(f"Unsupported file extension: {path.suffix}")
 
@@ -147,6 +146,7 @@ class LspTool(BaseTool):
         )
 
         self.document_versions[uri] = 1
+        self._opened_documents.add(uri)
 
     def execute(self, arguments: dict[str, Any]) -> str:
         operation = arguments.get("operation")

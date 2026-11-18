@@ -13,22 +13,12 @@ class WriteTool(BaseTool):
         "type": "object",
         "required": ["file_path", "content"],
         "properties": {
-            "file_path": {
-                "type": "string",
-                "description": "The path of the file to write to",
-            },
-            "content": {
-                "type": "string",
-                "description": "The content to write to the file",
-            },
+            "file_path": {"type": "string"},
+            "content": {"type": "string"},
         },
     }
 
-    def __init__(
-        self,
-        lsp_client: LSPClient | None = None,
-        document_versions: dict[str, int] | None = None,
-    ) -> None:
+    def __init__(self, lsp_client=None, document_versions=None):
         self.lsp_client = lsp_client
         self.document_versions = (
             document_versions if document_versions is not None else {}
@@ -38,7 +28,6 @@ class WriteTool(BaseTool):
         path = Path(arguments["file_path"]).expanduser().resolve()
         content = arguments["content"]
 
-        # Save the file before notifying the language server.
         path.write_text(content, encoding="utf-8")
 
         if self.lsp_client is None:
@@ -48,19 +37,21 @@ class WriteTool(BaseTool):
             return content
 
         uri = path.as_uri()
-        version = self.document_versions.get(uri, 0) + 1
 
-        self.lsp_client.notify(
-            "textDocument/didChange",
-            {
-                "textDocument": {
-                    "uri": uri,
-                    "version": version,
+        if uri in self.document_versions:
+            version = self.document_versions[uri] + 1
+
+            self.lsp_client.notify(
+                "textDocument/didChange",
+                {
+                    "textDocument": {
+                        "uri": uri,
+                        "version": version,
+                    },
+                    "contentChanges": [{"text": content}],
                 },
-                "contentChanges": [{"text": content}],
-            },
-        )
+            )
 
-        self.document_versions[uri] = version
+            self.document_versions[uri] = version
 
         return content
