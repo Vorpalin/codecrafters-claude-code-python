@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -8,6 +7,7 @@ from app.tools.base import BaseTool
 from app.lsp import LSPClient
 
 SUPPORTED_OPERATIONS = ["goToDefinition", "findReferences"]
+
 
 class LspTool(BaseTool):
     name = "LSP"
@@ -41,13 +41,17 @@ class LspTool(BaseTool):
         "required": ["operation", "filePath", "line", "character"],
     }
 
-    def __init__(self, lsp_client: LSPClient | None = None) -> None:
+    def __init__(
+        self,
+        lsp_client: LSPClient | None = None,
+        document_versions: dict[str, int] | None = None,
+    ) -> None:
         self.lsp_client = lsp_client or LSPClient.from_environment()
-        self._opened_documents: set[str] = set()
+        self.document_versions = (
+            document_versions if document_versions is not None else {}
+        )
 
-    def _go_to_definition(
-        self, path: Path, line: int, character: int
-    ) -> str:
+    def _go_to_definition(self, path: Path, line: int, character: int) -> str:
 
         uri = self._open_document(path)
 
@@ -68,26 +72,17 @@ class LspTool(BaseTool):
         location = result[0] if isinstance(result, list) else result
 
         target_uri = location.get("uri") or location.get("targetUri")
-        target_range = (
-            location.get("range")
-            or location.get("targetSelectionRange")
-        )
+        target_range = location.get("range") or location.get("targetSelectionRange")
 
         if not target_uri or not target_range:
             return "Error: Invalid LSP definition response."
 
-        target_path = Path(
-            url2pathname(urlparse(target_uri).path)
-        )
+        target_path = Path(url2pathname(urlparse(target_uri).path))
         start = target_range["start"]
 
-        return (
-            f"Defined in {target_path.name}:{start['line'] + 1}:{start['character'] + 1}"
-        )
+        return f"Defined in {target_path.name}:{start['line'] + 1}:{start['character'] + 1}"
 
-    def _find_references(
-        self, path: Path, line: int, character: int
-    ) -> str:
+    def _find_references(self, path: Path, line: int, character: int) -> str:
 
         uri = self._open_document(path)
 
@@ -115,14 +110,11 @@ class LspTool(BaseTool):
             if not reference_uri or not reference_range:
                 continue
 
-            reference_path = Path(
-                url2pathname(urlparse(reference_uri).path)
-            )
+            reference_path = Path(url2pathname(urlparse(reference_uri).path))
             start = reference_range["start"]
 
             references.append(
-                f"{reference_path.name} at "
-                f"{start['line'] + 1}:{start['character'] + 1}"
+                f"{reference_path.name} at {start['line'] + 1}:{start['character'] + 1}"
             )
 
         if not references:
@@ -134,15 +126,13 @@ class LspTool(BaseTool):
 
         uri = path.as_uri()
 
-        if uri in self._opened_documents:
+        if uri in self.document_versions:
             return uri
 
         language_id = self.lsp_client.extension_to_language.get(path.suffix)
 
         if language_id is None:
-            raise ValueError(
-                f"Unsupported file extension: {path.suffix}"
-            )
+            raise ValueError(f"Unsupported file extension: {path.suffix}")
 
         self.lsp_client.notify(
             "textDocument/didOpen",
@@ -156,9 +146,7 @@ class LspTool(BaseTool):
             },
         )
 
-        self._opened_documents.add(uri)
-
-        return uri
+        self.document_versions[uri] = 1
 
     def execute(self, arguments: dict[str, Any]) -> str:
         operation = arguments.get("operation")

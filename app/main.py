@@ -6,15 +6,27 @@ from app.lsp.lsp_client import LSPClient
 from app.skills import SkillService
 from app.tools import BashTool, LspTool, ReadTool, SkillTool, ToolRegistry, WriteTool
 
-def build_agent(client: OpenAI,
-                lsp_client: LSPClient | None = None,
+
+def build_agent(
+    client: OpenAI,
+    lsp_client: LSPClient | None = None,
 ) -> tuple[Agent, SkillService]:
     skills = SkillService()
-    registry = ToolRegistry([ReadTool(), LspTool(lsp_client), WriteTool(), BashTool(), SkillTool(skills)])
-    
+    document_versions: dict[str, int] = {}
+
+    registry = ToolRegistry(
+        [
+            ReadTool(),
+            LspTool(lsp_client, document_versions),
+            WriteTool(lsp_client, document_versions),
+            BashTool(),
+            SkillTool(skills),
+        ]
+    )
+
     agent = Agent(client, registry)
     skills.set_subagent_runner(agent.run)
-    
+
     return agent, skills
 
 
@@ -31,7 +43,12 @@ def main() -> None:
     agent, skills = build_agent(client, lsp_client)
     descriptions = skills.get_skills()
     messages = [
-        {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(descriptions) + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns."},
+        {
+            "role": "system",
+            "content": "You have access to the following skills:\n\n"
+            + "\n".join(descriptions)
+            + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns.",
+        },
         {"role": "user", "content": skills.get_content(args.p)},
     ]
 

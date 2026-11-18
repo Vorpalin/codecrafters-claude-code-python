@@ -2,8 +2,10 @@ import json
 from typing import Any, Iterable
 from app.tools.base import BaseTool
 
+
 class ToolRegistry:
     """Registers tools and dispatches model tool calls."""
+
     def __init__(self, tools: Iterable[BaseTool] = ()) -> None:
         self._tools: dict[str, BaseTool] = {}
         for tool in tools:

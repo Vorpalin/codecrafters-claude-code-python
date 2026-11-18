@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 class SkillLoader:
     def __init__(self, skills_directory: str | Path = ".claude/skills") -> None:
         self.skills_directory = Path(skills_directory)
@@ -10,7 +11,12 @@ class SkillLoader:
         result = []
         for path in sorted(self.skills_directory.glob("*/SKILL.md")):
             metadata, _ = self.parse_file(path)
-            result.append((metadata.get("name", path.parent.name), metadata.get("description", "")))
+            result.append(
+                (
+                    metadata.get("name", path.parent.name),
+                    metadata.get("description", ""),
+                )
+            )
         return result
 
     def load(self, name: str) -> tuple[dict[str, str], str]:
