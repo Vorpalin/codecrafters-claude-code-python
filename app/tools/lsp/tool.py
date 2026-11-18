@@ -109,8 +109,5 @@ class LspTool(BaseTool):
         start = target_range["start"]
 
         return (
-            "Definition found:\n"
-            f"File: {target_path}\n"
-            f"Line: {start['line'] + 1}\n"
-            f"Character: {start['character'] + 1}"
-        )
+          f"Defined in {target_path.name}:{start['line'] + 1}:{start['character'] + 1}"
+      )
