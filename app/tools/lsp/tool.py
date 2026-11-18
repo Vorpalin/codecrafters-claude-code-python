@@ -46,10 +46,10 @@ class LspTool(BaseTool):
         self._opened_documents: set[str] = set()
 
     def _go_to_definition(
-        self, filePath: str, line: int, character: int
+        self, path: Path, line: int, character: int
     ) -> str:
 
-        uri = self._open_document(filePath)
+        uri = self._open_document(path)
 
         result = self.lsp_client.request(
             "textDocument/definition",
@@ -82,14 +82,14 @@ class LspTool(BaseTool):
         start = target_range["start"]
 
         return (
-            f"Defined in {filePath}:{start['line'] + 1}:{start['character'] + 1}"
+            f"Defined in {target_path.name}:{start['line'] + 1}:{start['character'] + 1}"
         )
 
     def _find_references(
-        self, filePath: str, line: int, character: int
+        self, path: Path, line: int, character: int
     ) -> str:
 
-        uri = self._open_document(filePath)
+        uri = self._open_document(path)
 
         result = self.lsp_client.request(
             "textDocument/references",
@@ -130,9 +130,8 @@ class LspTool(BaseTool):
 
         return "References found:\n" + "\n".join(references)
 
-    def _open_document(self, filePath) -> str:
+    def _open_document(self, path) -> str:
 
-        path = Path(filePath).expanduser().resolve()
         uri = path.as_uri()
 
         if uri in self._opened_documents:
