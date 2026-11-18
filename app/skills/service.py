@@ -34,11 +34,12 @@ class SkillService:
             for argument_index, argument in enumerate(arguments):
                 skill_text = skill_text.replace("$" + str(argument_index), argument)
                 skill_text = skill_text.replace(f"$ARGUMENTS[{argument_index}]", argument)
+            
             if metadata.get("context") == "fork":
                 if self._subagent_runner is None:
                     raise RuntimeError("Subagent runner is not configured")
-                self._subagent_runner([{"role": "user", "content": skill_text}])
-                skill_text = ""
+                
+                skill_text = str(self._subagent_runner([{"role": "user", "content": skill_text}]))
             resolved.append(skill_text)
         result = "\n".join(part for part in resolved if part)
         if len(command) != skill_count:

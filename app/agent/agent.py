@@ -7,7 +7,7 @@ class Agent:
         self.client = client
         self.registry = registry
 
-    def run(self, messages: list[Any]) -> None:
+    def run(self, messages: list[Any]) -> str:
         while True:
             response = self.client.chat.completions.create(model="anthropic/claude-haiku-4.5", messages=messages, tools=self.registry.get_schemas())
             if not response.choices:
@@ -16,8 +16,8 @@ class Agent:
             messages.append(assistant_message)
             tool_calls = assistant_message.tool_calls
             if not tool_calls:
-                print(assistant_message.content)
-                return
+                return assistant_message.content or ""
+
             for tool_call in tool_calls:
                 if tool_call.function is None:
                     continue

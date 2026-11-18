@@ -38,7 +38,8 @@ def main() -> None:
         {"role": "system", "content": "You have access to the following skills:\n\n" + "\n".join(descriptions) + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns."},
         {"role": "user", "content": skills.get_content(args.p)},
     ]
-    agent.run(messages)
+    
+    print(agent.run(messages))
 
 
 if __name__ == "__main__":
