@@ -30,4 +30,4 @@ class LspTool(BaseTool):
     }
 
     def execute(self, arguments: dict[str, Any]) -> str:
-        raise Exception("LSP is not implemented yet")
+        return "LSP is not implemented yet"
