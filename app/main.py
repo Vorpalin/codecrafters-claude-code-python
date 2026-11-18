@@ -2,6 +2,7 @@ import argparse
 from openai import OpenAI
 from app.agent import Agent
 from app.config import Settings
+from app.lsp.lsp_client import LSPClient
 from app.skills import SkillService
 from app.tools import BashTool, LspTool, ReadTool, SkillTool, ToolRegistry, WriteTool
 
@@ -18,8 +19,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", required=True)
     args = parser.parse_args()
+
     settings = Settings.from_environment()
     client = OpenAI(api_key=settings.api_key, base_url=settings.base_url)
+
+    lsp_client = LSPClient()
+    lsp_configuration = lsp_client.call("configuration", {})
+
     agent, skills = build_agent(client)
     descriptions = skills.get_skills()
     messages = [
