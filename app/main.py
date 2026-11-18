@@ -5,7 +5,6 @@ from app.config import Settings
 from app.lsp.lsp_client import LSPClient
 from app.skills import SkillService
 from app.tools import BashTool, LspTool, ReadTool, SkillTool, ToolRegistry, WriteTool
-import os
 
 def build_agent(client: OpenAI,
                 lsp_client: LSPClient | None = None,
