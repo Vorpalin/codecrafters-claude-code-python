@@ -33,7 +33,8 @@ class WriteTool(BaseTool):
         if self.lsp_client is None:
             return content
 
-        if path.suffix not in self.lsp_client.extension_to_language:
+        language_id = self.lsp_client.extension_to_language.get(path.suffix)
+        if language_id is None:
             return content
 
         uri = path.as_uri()
@@ -51,7 +52,21 @@ class WriteTool(BaseTool):
                     "contentChanges": [{"text": content}],
                 },
             )
+        else:
+            version = 1
 
-            self.document_versions[uri] = version
+            self.lsp_client.notify(
+                "textDocument/didOpen",
+                {
+                    "textDocument": {
+                        "uri": uri,
+                        "languageId": language_id,
+                        "version": version,
+                        "text": content,
+                    }
+                },
+            )
+
+        self.document_versions[uri] = version
 
         return content

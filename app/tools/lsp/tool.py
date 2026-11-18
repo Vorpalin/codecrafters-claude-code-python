@@ -127,6 +127,7 @@ class LspTool(BaseTool):
         uri = path.resolve().as_uri()
 
         if uri in self._opened_documents:
+            self._opened_documents.add(uri)
             return uri
 
         language_id = self.lsp_client.extension_to_language.get(path.suffix)

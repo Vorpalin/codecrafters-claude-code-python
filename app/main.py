@@ -2,7 +2,7 @@ import argparse
 from openai import OpenAI
 from app.agent import Agent
 from app.config import Settings
-from app.lsp.lsp_client import LSPClient
+from app.lsp import LSPDiagnostics, LSPClient
 from app.skills import SkillService
 from app.tools import BashTool, LspTool, ReadTool, SkillTool, ToolRegistry, WriteTool
 
@@ -24,8 +24,9 @@ def build_agent(
         ]
     )
 
-    agent = Agent(client, registry)
-    skills.set_subagent_runner(agent.run)
+    diagnostics = LSPDiagnostics(lsp_client, document_versions)
+
+    agent = Agent(client, registry, diagnostics)
 
     return agent, skills
 
