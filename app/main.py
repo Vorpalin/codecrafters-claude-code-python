@@ -5,13 +5,15 @@ from app.config import Settings
 from app.lsp.lsp_client import LSPClient
 from app.skills import SkillService
 from app.tools import BashTool, LspTool, ReadTool, SkillTool, ToolRegistry, WriteTool
-
+import os
 
 def build_agent(client: OpenAI) -> tuple[Agent, SkillService]:
     skills = SkillService()
     registry = ToolRegistry([ReadTool(), LspTool(), WriteTool(), BashTool(), SkillTool(skills)])
+    
     agent = Agent(client, registry)
     skills.set_subagent_runner(agent.run)
+    
     return agent, skills
 
 
@@ -23,8 +25,12 @@ def main() -> None:
     settings = Settings.from_environment()
     client = OpenAI(api_key=settings.api_key, base_url=settings.base_url)
 
-    lsp_client = LSPClient()
-    lsp_configuration = lsp_client.call("configuration", {})
+    lsp_client = None
+    lsp_configuration = None
+
+    if os.getenv("CODECRAFTERS_LSP_URL"):
+        lsp_client = LSPClient()
+        lsp_configuration = lsp_client.call("configuration", {})
 
     agent, skills = build_agent(client)
     descriptions = skills.get_skills()
