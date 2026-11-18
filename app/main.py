@@ -1,10 +1,19 @@
 import argparse
+
 from openai import OpenAI
+
 from app.agent import Agent
 from app.config import Settings
 from app.lsp import LSPDiagnostics, LSPClient
 from app.skills import SkillService
-from app.tools import BashTool, LspTool, ReadTool, SkillTool, ToolRegistry, WriteTool
+from app.tools import (
+    BashTool,
+    LspTool,
+    ReadTool,
+    SkillTool,
+    ToolRegistry,
+    WriteTool,
+)
 
 
 def build_agent(
@@ -28,6 +37,8 @@ def build_agent(
 
     agent = Agent(client, registry, diagnostics)
 
+    skills.set_subagent_runner(agent.run)
+
     return agent, skills
 
 
@@ -37,20 +48,31 @@ def main() -> None:
     args = parser.parse_args()
 
     settings = Settings.from_environment()
-    client = OpenAI(api_key=settings.api_key, base_url=settings.base_url)
+    client = OpenAI(
+        api_key=settings.api_key,
+        base_url=settings.base_url,
+    )
 
     lsp_client = LSPClient.from_environment()
 
     agent, skills = build_agent(client, lsp_client)
+
     descriptions = skills.get_skills()
+
     messages = [
         {
             "role": "system",
-            "content": "You have access to the following skills:\n\n"
-            + "\n".join(descriptions)
-            + "\n\nIf a skill matches the user's request, call the Skill tool with its name and follow the instructions it returns.",
+            "content": (
+                "You have access to the following skills:\n\n"
+                + "\n".join(descriptions)
+                + "\n\nIf a skill matches the user's request, call the Skill "
+                "tool with its name and follow the instructions it returns."
+            ),
         },
-        {"role": "user", "content": skills.get_content(args.p)},
+        {
+            "role": "user",
+            "content": skills.get_content(args.p),
+        },
     ]
 
     print(agent.run(messages))
