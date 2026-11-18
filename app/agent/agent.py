@@ -29,14 +29,14 @@ class Agent:
         self,
         messages: list[Any],
         pending: list[str],
-        tool_names: dict[str, str],
     ) -> None:
         if not pending:
             return
 
+        # Keep the diagnostics until a tool result is available.
         diagnostic_text = "\n\n".join(pending)
-        pending.clear()
 
+        # Attach diagnostics to the latest tool result, including Write.
         for message in reversed(messages):
             if not isinstance(message, dict):
                 continue
@@ -44,28 +44,23 @@ class Agent:
             if message.get("role") != "tool":
                 continue
 
-            tool_name = tool_names.get(message.get("tool_call_id"))
+            content = message.get("content", "")
+            message["content"] = (
+                f"{content}\n\n{diagnostic_text}"
+                if content
+                else diagnostic_text
+            )
 
-            if tool_name == "Write":
-                continue
-
-            message["content"] += "\n\n" + diagnostic_text
+            pending.clear()
             return
 
-        pending.append(diagnostic_text)
-
     def run(self, messages: list[Any]) -> str:
-        tool_names: dict[str, str] = {}
         pending_diagnostics: list[str] = []
 
         while True:
             # Collect notifications before every model request.
             self._collect_diagnostics(pending_diagnostics)
-            self._append_diagnostics(
-                messages,
-                pending_diagnostics,
-                tool_names,
-            )
+            self._append_diagnostics(messages, pending_diagnostics)
 
             response = self.client.chat.completions.create(
                 model="anthropic/claude-haiku-4.5",
@@ -89,7 +84,6 @@ class Agent:
                     continue
 
                 tool_name = tool_call.function.name
-                tool_names[tool_call.id] = tool_name
 
                 try:
                     result = self.registry.execute(
