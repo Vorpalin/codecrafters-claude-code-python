@@ -126,7 +126,7 @@ class LspTool(BaseTool):
     def _open_document(self, path: Path) -> str:
         uri = path.resolve().as_uri()
 
-        if uri in self._opened_documents:
+        if uri in self.document_versions:
             self._opened_documents.add(uri)
             return uri
 

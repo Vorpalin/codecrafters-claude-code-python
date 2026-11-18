@@ -1,5 +1,7 @@
 from typing import Any
+
 from openai import OpenAI
+
 from app.tools import ToolRegistry
 from app.lsp import LSPDiagnostics
 
@@ -15,34 +17,55 @@ class Agent:
         self.registry = registry
         self.diagnostics = diagnostics
 
-    def _append_diagnostics(self, messages, diagnostics, tool_names):
-        if not diagnostics:
+    def _collect_diagnostics(self, pending: list[str]) -> None:
+        if self.diagnostics is None:
             return
 
-        # Preserve Write's original success result.
-        for message in reversed(messages):
-            if (
-                isinstance(message, dict)
-                and message.get("role") == "tool"
-                and message.get("_tool_name") != "Write"
-            ):
-                message["content"] += "\n\n" + diagnostics
-                return
+        diagnostic_text = self.diagnostics.poll()
+        if diagnostic_text:
+            pending.append(diagnostic_text)
 
-        messages.append(
-            {
-                "role": "user",
-                "content": diagnostics,
-            }
-        )
+    def _append_diagnostics(
+        self,
+        messages: list[Any],
+        pending: list[str],
+        tool_names: dict[str, str],
+    ) -> None:
+        if not pending:
+            return
+
+        diagnostic_text = "\n\n".join(pending)
+        pending.clear()
+
+        for message in reversed(messages):
+            if not isinstance(message, dict):
+                continue
+
+            if message.get("role") != "tool":
+                continue
+
+            tool_name = tool_names.get(message.get("tool_call_id"))
+
+            if tool_name == "Write":
+                continue
+
+            message["content"] += "\n\n" + diagnostic_text
+            return
+
+        pending.append(diagnostic_text)
 
     def run(self, messages: list[Any]) -> str:
-        tool_names = {}
+        tool_names: dict[str, str] = {}
+        pending_diagnostics: list[str] = []
 
         while True:
-            if self.diagnostics is not None:
-                diagnostic_text = self.diagnostics.poll()
-                self._append_diagnostics(messages, diagnostic_text, tool_names)
+            # Collect notifications before every model request.
+            self._collect_diagnostics(pending_diagnostics)
+            self._append_diagnostics(
+                messages,
+                pending_diagnostics,
+                tool_names,
+            )
 
             response = self.client.chat.completions.create(
                 model="anthropic/claude-haiku-4.5",
@@ -66,6 +89,7 @@ class Agent:
                     continue
 
                 tool_name = tool_call.function.name
+                tool_names[tool_call.id] = tool_name
 
                 try:
                     result = self.registry.execute(
@@ -75,11 +99,12 @@ class Agent:
                 except Exception as error:
                     result = f"Error: {error}"
 
-                tool_result = {
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "content": result,
-                }
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": result,
+                    }
+                )
 
-                tool_names[tool_call.id] = tool_name
-                messages.append(tool_result)
+                self._collect_diagnostics(pending_diagnostics)
