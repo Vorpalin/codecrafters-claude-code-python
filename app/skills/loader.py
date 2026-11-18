@@ -1,9 +1,15 @@
+import os
 from pathlib import Path
 
 
 class SkillLoader:
-    def __init__(self, skills_directory: str | Path = ".claude/skills") -> None:
-        self.skills_directory = Path(skills_directory)
+    def __init__(self, skills_directory: str | Path | None = None) -> None:
+        directory = (
+            skills_directory
+            or os.environ.get("CODECRAFTERS_SKILLS_DIR")
+            or ".claude/skills"
+        )
+        self.skills_directory = Path(directory).expanduser().resolve()
 
     def list_skills(self) -> list[tuple[str, str]]:
         if not self.skills_directory.is_dir():
