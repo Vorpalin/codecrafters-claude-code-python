@@ -1,6 +1,7 @@
 import subprocess
 from typing import Any
 from app.tools.base import BaseTool
+from app.lsp import LSPClient
 
 class LspTool(BaseTool):
     name = "LSP"
@@ -28,6 +29,9 @@ class LspTool(BaseTool):
       },
       "required": ["operation", "filePath", "line", "character"]
     }
+
+    def __init__(self, lsp_client: LSPClient | None = None) -> None:
+            self.lsp_client = lsp_client or LSPClient.from_environment()
 
     def execute(self, arguments: dict[str, Any]) -> str:
         operation = arguments.get("operation", "")
