@@ -43,6 +43,7 @@ class LspTool(BaseTool):
 
     def __init__(self, lsp_client: LSPClient | None = None) -> None:
         self.lsp_client = lsp_client or LSPClient.from_environment()
+        self._opened_documents: set[str] = set()
 
     def _go_to_definition(
         self, path: Path, line: int, character: int
@@ -132,6 +133,10 @@ class LspTool(BaseTool):
         return "References found:\n" + "\n".join(references)
 
     def _open_document(self, path: Path, uri: str) -> None:
+
+        if uri in self._opened_documents:
+            return
+
         language_id = self.lsp_client.extension_to_language.get(path.suffix)
 
         if language_id is None:
@@ -150,6 +155,8 @@ class LspTool(BaseTool):
                 }
             },
         )
+
+        self._opened_documents.add(uri)
 
     def execute(self, arguments: dict[str, Any]) -> str:
         operation = arguments.get("operation")
